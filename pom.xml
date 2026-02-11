@@ -42,7 +42,7 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.3.0</version>
-        <configuration><mainClass>edu.eci.arsw.app.Main</mainClass><systemPropertyVariables><sun.java2d.uiScale>2</sun.java2d.uiScale></systemPropertyVariables></configuration>
+        <configuration><mainClass>edu.eci.arsw.app.Main</mainClass></configuration>
       </plugin>
     </plugins>
   </build>
