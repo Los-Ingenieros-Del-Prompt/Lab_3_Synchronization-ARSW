@@ -76,17 +76,41 @@ public final class ControlFrame extends JFrame {
   private void onPauseAndCheck(ActionEvent e) {
     if (manager == null) return;
     manager.pause();
+    
+    try { Thread.sleep(100); } catch (InterruptedException ie) {}
+    
     List<Immortal> pop = manager.populationSnapshot();
-    long sum = 0;
+    long actualTotal = 0;
     StringBuilder sb = new StringBuilder();
+    
     for (Immortal im : pop) {
       int h = im.getHealth();
-      sum += h;
+      actualTotal += h;
       sb.append(String.format("%-14s : %5d%n", im.name(), h));
     }
+    
+    sb.append("================================\n");
+    long fights = manager.scoreBoard().totalFights();
+    long expectedTotal = manager.calculateExpectedTotal();
+    long difference = Math.abs(expectedTotal - actualTotal);
+    boolean valid = manager.checkInvariant();
+    
+    sb.append(String.format("Fights:         %d%n", fights));
+    sb.append(String.format("Actual Total:   %d%n", actualTotal));
     sb.append("--------------------------------\n");
-    sb.append("Total Health: ").append(sum).append('\n');
-    sb.append("Score (fights): ").append(manager.scoreBoard().totalFights()).append('\n');
+    sb.append("INVARIANT CHECK:\n");
+    sb.append(String.format("  Expected:     %d%n", expectedTotal));
+    sb.append(String.format("  Actual:       %d%n", actualTotal));
+    sb.append(String.format("  Difference:   %d%n", difference));
+    sb.append(String.format("  Status:       %s%n", valid ? "✓ VALID" : "✗ INVALID"));
+    
+    if (!valid) {
+      sb.append("\n⚠️  WARNING: Invariant violation!\n");
+      sb.append("Possible causes:\n");
+      sb.append("  • Incomplete pause (threads still fighting)\n");
+      sb.append("  • Race condition in synchronization\n");
+    }
+    
     output.setText(sb.toString());
   }
 
