@@ -51,12 +51,26 @@ public final class ImmortalManager implements AutoCloseable {
   }
 
   public int aliveCount() {
+    if (controller.paused()) {
+      try {
+        controller.waitForAllPaused(initialPopulation);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
     int c = 0;
     for (Immortal im : population) if (im.isAlive()) c++;
     return c;
   }
 
   public long totalHealth() {
+    if (controller.paused()) {
+      try {
+        controller.waitForAllPaused(initialPopulation);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
     long sum = 0;
     for (Immortal im : population) sum += im.getHealth();
     return sum;
