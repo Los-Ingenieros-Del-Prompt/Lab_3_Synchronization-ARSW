@@ -137,7 +137,24 @@ public final class ControlFrame extends JFrame {
     }
   }
 
-  private void onStop(ActionEvent e) { safeStop(); }
+  private void onStop(ActionEvent e) { 
+    if (manager == null) {
+      output.append("\n\n⚠️  No simulation running\n");
+      return;
+    }
+    
+    long startTime = System.currentTimeMillis();
+    int populationCount = manager.populationSnapshot().size();
+    long fights = manager.scoreBoard().totalFights();
+    
+    safeStop(); 
+    
+    long duration = System.currentTimeMillis() - startTime;
+    output.append(String.format("\n\n■ Simulation STOPPED\n"));
+    output.append(String.format("   Total fights: %d\n", fights));
+    output.append(String.format("   Final population: %d immortals\n", populationCount));
+    output.append(String.format("   Shutdown time: %dms\n", duration));
+  }
 
   private void safeStop() {
     if (manager != null) {
