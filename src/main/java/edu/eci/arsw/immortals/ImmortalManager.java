@@ -21,6 +21,7 @@ public final class ImmortalManager implements AutoCloseable {
   private final int initialHealth;
   private final int damage;
   private int initialPopulation;
+  private int healthRemovedByCleanup = 0;
 
   public ImmortalManager(int n, String fightMode) {
     this(n, fightMode, Integer.getInteger("health", 100), Integer.getInteger("damage", 10));
@@ -87,7 +88,8 @@ public final class ImmortalManager implements AutoCloseable {
   @Override public void close() { stop(); }
   
   public long calculateExpectedTotal() {
-      return (long) initialHealth * initialPopulation - scoreBoard.totalFights() * (damage / 2L);
+      long netLossPerFight = damage - (damage / 2);
+      return (long) initialHealth * initialPopulation - scoreBoard.totalFights() * netLossPerFight - healthRemovedByCleanup;
 }
 
   public boolean checkInvariant(){
@@ -102,7 +104,9 @@ public final class ImmortalManager implements AutoCloseable {
     int removed = 0;
     for (Immortal im : population) {
       if (im.getHealth() <= 0) {
+        int health = im.getHealth();
         population.remove(im);
+        healthRemovedByCleanup += health;
         removed++;
       }
     }
