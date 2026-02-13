@@ -86,7 +86,7 @@ public final class ImmortalManager implements AutoCloseable {
   @Override public void close() { stop(); }
   
   public long calculateExpectedTotal() {
-      return (long) initialHealth * initialPopulation- scoreBoard.totalFights() * (damage / 2L);
+      return (long) initialHealth * initialPopulation - scoreBoard.totalFights() * (damage / 2L);
 }
 
   public boolean checkInvariant(){

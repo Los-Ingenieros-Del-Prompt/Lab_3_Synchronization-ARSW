@@ -56,8 +56,25 @@ public final class Immortal implements Runnable {
   }
 
   private void fightNaive(Immortal other) {
-    synchronized (this) {
-      synchronized (other) {
+    Immortal first, second;
+    int nameComparison = this.name.compareTo(other.name);
+    if (nameComparison < 0) {
+      first = this;
+      second = other;
+    } else if (nameComparison > 0) {
+      first = other;
+      second = this;
+    } else {
+      if (System.identityHashCode(this) < System.identityHashCode(other)) {
+        first = this;
+        second = other;
+      } else {
+        first = other;
+        second = this;
+      }
+    }
+    synchronized (first) {
+      synchronized (second) {
         if (this.health <= 0 || other.health <= 0) return;
         other.health -= this.damage;
         this.health += this.damage / 2;
@@ -67,8 +84,23 @@ public final class Immortal implements Runnable {
   }
 
   private void fightOrdered(Immortal other) {
-    Immortal first = this.name.compareTo(other.name) < 0 ? this : other;
-    Immortal second = this.name.compareTo(other.name) < 0 ? other : this;
+    Immortal first, second;
+    int nameComparison = this.name.compareTo(other.name);
+    if (nameComparison < 0) {
+      first = this;
+      second = other;
+    } else if (nameComparison > 0) {
+      first = other;
+      second = this;
+    } else {
+      if (System.identityHashCode(this) < System.identityHashCode(other)) {
+        first = this;
+        second = other;
+      } else {
+        first = other;
+        second = this;
+      }
+    }
     synchronized (first) {
       synchronized (second) {
         if (this.health <= 0 || other.health <= 0) return;
