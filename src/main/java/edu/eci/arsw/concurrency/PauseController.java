@@ -17,7 +17,6 @@ public final class PauseController {
     lock.lock(); 
     try { 
       paused = false; 
-      waitingThreads.set(0);
       unpaused.signalAll(); 
     } finally { 
       lock.unlock(); 

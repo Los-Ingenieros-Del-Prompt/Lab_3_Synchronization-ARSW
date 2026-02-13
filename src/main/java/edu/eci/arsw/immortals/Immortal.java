@@ -48,10 +48,14 @@ public final class Immortal implements Runnable {
 
   private Immortal pickOpponent() {
     if (population.size() <= 1) return null;
+    int attempts = 0;
+    int maxAttempts = population.size() * 2;
     Immortal other;
     do {
-      other = population.get(ThreadLocalRandom.current().nextInt(population.size()));
-    } while (other == this);
+      if (attempts++ > maxAttempts) return null;
+      int index = ThreadLocalRandom.current().nextInt(population.size());
+      other = population.get(index);
+    } while (other == this || other.getHealth() <= 0);
     return other;
   }
 

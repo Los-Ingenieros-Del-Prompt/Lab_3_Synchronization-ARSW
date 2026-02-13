@@ -117,6 +117,7 @@ public final class ControlFrame extends JFrame {
   private void onResume(ActionEvent e) {
     if (manager == null) return;
     manager.resume();
+    output.append("\n\n▶ Simulation RESUMED\n");
   }
 
   private void onStop(ActionEvent e) { safeStop(); }
