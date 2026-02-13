@@ -19,6 +19,7 @@ public final class ImmortalManager implements AutoCloseable {
   private final String fightMode;
   private final int initialHealth;
   private final int damage;
+  private int initialPopulation;
 
   public ImmortalManager(int n, String fightMode) {
     this(n, fightMode, Integer.getInteger("health", 100), Integer.getInteger("damage", 10));
@@ -28,6 +29,7 @@ public final class ImmortalManager implements AutoCloseable {
     this.fightMode = fightMode;
     this.initialHealth = initialHealth;
     this.damage = damage;
+    initialPopulation = n;
     for (int i=0;i<n;i++) {
       population.add(new Immortal("Immortal-"+i, initialHealth, damage, population, scoreBoard, controller));
     }
@@ -68,4 +70,17 @@ public final class ImmortalManager implements AutoCloseable {
   public PauseController controller() { return controller; }
 
   @Override public void close() { stop(); }
+  
+  public long calculateExpectedTotal() {
+      return (long) initialHealth * initialPopulation- scoreBoard.totalFights() * (damage / 2L);
+}
+
+  public boolean checkInvariant(){
+      return totalHealth() == calculateExpectedTotal();
+  }
+  
+  public int getInitialHealth() { return initialHealth; }
+  public int getDamage() { return damage; }
+  public int getInitialPopulation() { return initialPopulation; }
+  
 }
