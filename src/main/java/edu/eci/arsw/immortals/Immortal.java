@@ -48,16 +48,37 @@ public final class Immortal implements Runnable {
 
   private Immortal pickOpponent() {
     if (population.size() <= 1) return null;
+    int attempts = 0;
+    int maxAttempts = population.size() * 2;
     Immortal other;
     do {
-      other = population.get(ThreadLocalRandom.current().nextInt(population.size()));
-    } while (other == this);
+      if (attempts++ > maxAttempts) return null;
+      int index = ThreadLocalRandom.current().nextInt(population.size());
+      other = population.get(index);
+    } while (other == this || other.getHealth() <= 0);
     return other;
   }
 
   private void fightNaive(Immortal other) {
-    synchronized (this) {
-      synchronized (other) {
+    Immortal first, second;
+    int nameComparison = this.name.compareTo(other.name);
+    if (nameComparison < 0) {
+      first = this;
+      second = other;
+    } else if (nameComparison > 0) {
+      first = other;
+      second = this;
+    } else {
+      if (System.identityHashCode(this) < System.identityHashCode(other)) {
+        first = this;
+        second = other;
+      } else {
+        first = other;
+        second = this;
+      }
+    }
+    synchronized (first) {
+      synchronized (second) {
         if (this.health <= 0 || other.health <= 0) return;
         other.health -= this.damage;
         this.health += this.damage / 2;
@@ -67,8 +88,23 @@ public final class Immortal implements Runnable {
   }
 
   private void fightOrdered(Immortal other) {
-    Immortal first = this.name.compareTo(other.name) < 0 ? this : other;
-    Immortal second = this.name.compareTo(other.name) < 0 ? other : this;
+    Immortal first, second;
+    int nameComparison = this.name.compareTo(other.name);
+    if (nameComparison < 0) {
+      first = this;
+      second = other;
+    } else if (nameComparison > 0) {
+      first = other;
+      second = this;
+    } else {
+      if (System.identityHashCode(this) < System.identityHashCode(other)) {
+        first = this;
+        second = other;
+      } else {
+        first = other;
+        second = this;
+      }
+    }
     synchronized (first) {
       synchronized (second) {
         if (this.health <= 0 || other.health <= 0) return;

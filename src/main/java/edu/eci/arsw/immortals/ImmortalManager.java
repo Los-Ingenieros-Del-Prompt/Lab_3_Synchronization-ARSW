@@ -5,12 +5,13 @@ import edu.eci.arsw.concurrency.PauseController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public final class ImmortalManager implements AutoCloseable {
-  private final List<Immortal> population = new ArrayList<>();
+  private final List<Immortal> population = new CopyOnWriteArrayList<>();
   private final List<Future<?>> futures = new ArrayList<>();
   private final PauseController controller = new PauseController();
   private final ScoreBoard scoreBoard = new ScoreBoard();
@@ -51,12 +52,26 @@ public final class ImmortalManager implements AutoCloseable {
   }
 
   public int aliveCount() {
+    if (controller.paused()) {
+      try {
+        controller.waitForAllPaused(initialPopulation);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
     int c = 0;
     for (Immortal im : population) if (im.isAlive()) c++;
     return c;
   }
 
   public long totalHealth() {
+    if (controller.paused()) {
+      try {
+        controller.waitForAllPaused(initialPopulation);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
     long sum = 0;
     for (Immortal im : population) sum += im.getHealth();
     return sum;
@@ -72,7 +87,7 @@ public final class ImmortalManager implements AutoCloseable {
   @Override public void close() { stop(); }
   
   public long calculateExpectedTotal() {
-      return (long) initialHealth * initialPopulation- scoreBoard.totalFights() * (damage / 2L);
+      return (long) initialHealth * initialPopulation - scoreBoard.totalFights() * (damage / 2L);
 }
 
   public boolean checkInvariant(){
@@ -82,5 +97,16 @@ public final class ImmortalManager implements AutoCloseable {
   public int getInitialHealth() { return initialHealth; }
   public int getDamage() { return damage; }
   public int getInitialPopulation() { return initialPopulation; }
+  
+  public int removeDead() {
+    int removed = 0;
+    for (Immortal im : population) {
+      if (im.getHealth() <= 0) {
+        population.remove(im);
+        removed++;
+      }
+    }
+    return removed;
+  }
   
 }
