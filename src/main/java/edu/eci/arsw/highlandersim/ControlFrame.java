@@ -15,6 +15,7 @@ public final class ControlFrame extends JFrame {
   private final JButton startBtn = new JButton("Start");
   private final JButton pauseAndCheckBtn = new JButton("Pause & Check");
   private final JButton resumeBtn = new JButton("Resume");
+  private final JButton removeDeadBtn = new JButton("Remove Dead");
   private final JButton stopBtn = new JButton("Stop");
 
   private final JSpinner countSpinner = new JSpinner(new SpinnerNumberModel(8, 2, 5000, 1));
@@ -48,12 +49,14 @@ public final class ControlFrame extends JFrame {
     bottom.add(startBtn);
     bottom.add(pauseAndCheckBtn);
     bottom.add(resumeBtn);
+    bottom.add(removeDeadBtn);
     bottom.add(stopBtn);
     add(bottom, BorderLayout.SOUTH);
 
     startBtn.addActionListener(this::onStart);
     pauseAndCheckBtn.addActionListener(this::onPauseAndCheck);
     resumeBtn.addActionListener(this::onResume);
+    removeDeadBtn.addActionListener(this::onRemoveDead);
     stopBtn.addActionListener(this::onStop);
 
     pack();
@@ -119,8 +122,39 @@ public final class ControlFrame extends JFrame {
     manager.resume();
     output.append("\n\n▶ Simulation RESUMED\n");
   }
+  
+  private void onRemoveDead(ActionEvent e) {
+    if (manager == null) return;
+    int populationBefore = manager.populationSnapshot().size();
+    int removed = manager.removeDead();
+    int populationAfter = manager.populationSnapshot().size();
+    
+    if (removed > 0) {
+      output.append(String.format("\n\n☠️  Removed %d dead immortal%s\n", removed, removed == 1 ? "" : "s"));
+      output.append(String.format("   Population: %d → %d\n", populationBefore, populationAfter));
+    } else {
+      output.append("\n\n✓ No dead immortals to remove\n");
+    }
+  }
 
-  private void onStop(ActionEvent e) { safeStop(); }
+  private void onStop(ActionEvent e) { 
+    if (manager == null) {
+      output.append("\n\n⚠️  No simulation running\n");
+      return;
+    }
+    
+    long startTime = System.currentTimeMillis();
+    int populationCount = manager.populationSnapshot().size();
+    long fights = manager.scoreBoard().totalFights();
+    
+    safeStop(); 
+    
+    long duration = System.currentTimeMillis() - startTime;
+    output.append(String.format("\n\n■ Simulation STOPPED\n"));
+    output.append(String.format("   Total fights: %d\n", fights));
+    output.append(String.format("   Final population: %d immortals\n", populationCount));
+    output.append(String.format("   Shutdown time: %dms\n", duration));
+  }
 
   private void safeStop() {
     if (manager != null) {
