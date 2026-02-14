@@ -120,6 +120,16 @@ src/main/java/edu/eci/arsw/
 mvn clean compile
 ```
 
+### Manual
+```bash
+mvn exec:java \
+  -Dexec.mainClass=edu.eci.arsw.app.Main \
+  -Dsun.java2d.uiScale=2 \
+  -Dmode=ui \
+  -Dcount=8 \
+  -Dfight=ordered
+```
+
 ### Run tests
 ```bash
 mvn test
